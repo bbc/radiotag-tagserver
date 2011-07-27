@@ -1,0 +1,5 @@
+:development:
+  :authservice: "http://127.0.0.1:4567"
+
+:production:
+  :authservice: "http://radiotag.example.com"

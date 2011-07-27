@@ -1,0 +1,22 @@
+xml.feed(:xmlns => "http://www.w3.org/2005/Atom", 'xmlns:radiotag' => 'http://radiodns.org/2011/radiotag') {
+  xml.title tag.title
+  xml.link(:href => "http://radiotag.prototype0.net")
+  xml.link(:href => "http://radiotag.prototype0.net", :rel => "self")
+  xml.updated Time.at(tag.time).xmlschema
+  xml.author {
+    xml.name "BBC"
+  }
+  xml.id_ "urn:uuid:#{tag.uuid}"
+
+  xml.entry {
+    xml.title tag.title
+    xml['radiotag'].sid tag.station
+    xml['radiotag'].service tag.service_title
+    xml.link(:rel => "image", :href=> tag.thumbnail_url)
+    xml.link(:rel => "canonical", :href=> tag.canonical_url)
+    xml.id_ "urn:uuid:#{tag.uuid}"
+    xml.updated Time.at(tag.time).xmlschema
+    xml.published Time.at(tag.time).xmlschema
+    xml.summary tag.description
+  }
+}
