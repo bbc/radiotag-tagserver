@@ -8,7 +8,7 @@ module ConfigHelper
   def load_config(filename, params = { })
     path = LoadPath.base_path(filename)
     if !File.exist?(path)
-      abort "Configuration file #{path} does not exist"
+      raise RuntimeError, "Configuration file #{path} does not exist"
     end
     load_from_path(path, params)
   end
