@@ -13,14 +13,17 @@
 # then require libraries as usual.
 #
 module LoadPath
-  def self.reload; Kernel.load __FILE__; end
+  def base_path=(path)
+    @base_path = path
+  end
 
   def base_path(*path)
     # if path starts with / don't prefix
+    @base_path ||= File.expand_path(File.join(File.dirname(__FILE__), '..'))
     if path.first =~ /^\//
       File.join(*path)
     else
-      File.expand_path(File.join(File.dirname(__FILE__), '..', *path))
+      File.join(@base_path, *path)
     end
   end
 

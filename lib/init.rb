@@ -1,7 +1,6 @@
 require "rubygems"
 require "bundler"
 require "logger"
-Bundler.require
 
 # add require_relative
 unless Kernel.respond_to?(:require_relative)
@@ -12,8 +11,11 @@ unless Kernel.respond_to?(:require_relative)
   end
 end
 
-require_relative 'tagserver'
 require_relative 'config_helper'
+
+Bundler.require
+
+require_relative 'tagserver'
 
 config = ConfigHelper.load_config("config/database.yml")
 service_config = ConfigHelper.load_config("config/services.yml")

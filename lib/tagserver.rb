@@ -35,14 +35,14 @@ class TagServer < Sinatra::Base
 
     def grant_header(scope)
       headers({
-                'X-Radiotag-Grant-Scope' => scope,
-                'X-Radiotag-Grant-Token' => grants[scope]
+                'X-RadioTAG-Grant-Scope' => scope,
+                'X-RadioTAG-Grant-Token' => grants[scope]
               })
     end
 
     def service_provider_header
       headers({
-                'X-Radiotag-Service-Provider' => 'BBC'
+                'X-RadioTAG-Service-Provider' => 'BBC'
               })
     end
 
@@ -59,8 +59,8 @@ class TagServer < Sinatra::Base
 
     def add_account_headers(token, account_name)
       headers(
-              "X-Radiotag-Auth-Token" => token,
-              "X-Radiotag-Account-Name" => account_name
+              "X-RadioTAG-Auth-Token" => token,
+              "X-RadioTAG-Account-Name" => account_name
               )
     end
 
@@ -85,8 +85,8 @@ class TagServer < Sinatra::Base
       case response.code
       when 200
         headers(
-                'X-Radiotag-Registration-Key' => GenerateID.rand_hex,
-                'X-Radiotag-Registration-Url' => "http://radiotag.prototype0.net/"
+                'X-RadioTAG-Registration-Key' => GenerateID.rand_hex,
+                'X-RadioTAG-Registration-Url' => "http://radiotag.prototyping.bbc.co.uk/"
                 )
         status 204
       else
@@ -131,7 +131,7 @@ class TagServer < Sinatra::Base
         when 200..299
           data = JSON.parse(response2.body)
           if data["value"] and data["value"]["account_id"]
-            logger.info "Account: #{data["value"]}"
+            logger.info "Account: #{data["value"]["account_name"]}"
             add_account_headers(token, data['value']['account_name'])
             has_account = true
           end
@@ -278,7 +278,7 @@ class TagServer < Sinatra::Base
       case response.code
       when 200..299
         data = JSON.parse(response.body)
-        headers 'X-radiotag-auth-token' => data["token"]
+        headers 'X-RadioTAG-Auth-Token' => data["token"]
         status 204
       when 400..499
         status 403

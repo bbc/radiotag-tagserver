@@ -70,13 +70,13 @@ class TagServerTest < Test::Unit::TestCase
   end
 
   def assert_has_grant_headers(scope)
-    assert_has_header 'X-radiotag-grant-token'
-    assert_has_header 'X-radiotag-grant-scope', scope
+    assert_has_header 'X-RadioTAG-Grant-Token'
+    assert_has_header 'X-RadioTAG-Grant-Scope', scope
   end
 
   def assert_has_no_grant_headers()
-    assert !last_response.headers['X-radiotag-grant-token'], "Should not have header: X-radiotag-grant-token=#{last_response.headers['X-radiotag-grant-token']}"
-    assert !last_response.headers['X-radiotag-grant-scope'], "Should not have header: X-radiotag-grant-scope=#{last_response.headers['X-radiotag-grant-scope']}"
+    assert !last_response.headers['X-RadioTAG-Grant-Token'], "Should not have header: X-RadioTAG-Grant-Token=#{last_response.headers['X-RadioTAG-Grant-Token']}"
+    assert !last_response.headers['X-RadioTAG-Grant-Scope'], "Should not have header: X-RadioTAG-Grant-Scope=#{last_response.headers['X-RadioTAG-Grant-Scope']}"
   end
 
   context "When the server only supports anonymous tagging" do
@@ -89,8 +89,9 @@ class TagServerTest < Test::Unit::TestCase
 
       setup do
         mock_auth("/authorized", {:token => ""}, 401)
+        Solr.expects(:solr_host).at_least_once.returns("solr.example.com")
 
-        FakeWeb.register_uri(:get, %r|http://solr\.prototype0\.net/solr/select.*|,
+        FakeWeb.register_uri(:get, %r|http://solr\.example\.com/solr/select.*|,
                              :body => File.read(File.dirname(__FILE__) + '/solr_response.json'))
 
         post '/tag', {:station=>"0.c224.ce15.ce1.dab", :time => Time.now.utc.to_i}
@@ -106,7 +107,7 @@ class TagServerTest < Test::Unit::TestCase
       end
 
       should "contain a service provider header" do
-        assert_has_header "X-Radiotag-Service-Provider", "BBC"
+        assert_has_header "X-RadioTAG-Service-Provider", "BBC"
       end
     end
   end
@@ -135,7 +136,7 @@ class TagServerTest < Test::Unit::TestCase
         end
 
         should "contain a service provider header" do
-          assert_has_header "X-Radiotag-Service-Provider", "BBC"
+          assert_has_header "X-RadioTAG-Service-Provider", "BBC"
         end
       end
 
@@ -143,8 +144,9 @@ class TagServerTest < Test::Unit::TestCase
         setup do
           mock_auth("/authorized", {:token => "VALID"}, 200, {:token => "HNGZ" }.to_json)
           mock_auth("/auth", { :params => {:token => "VALID"} }, 200, {:token => "HNGZ"}.to_json, :get)
+          Solr.expects(:solr_host).at_least_once.returns("solr.example.com")
 
-          FakeWeb.register_uri(:get, %r|http://solr\.prototype0\.net/solr/select.*|,
+          FakeWeb.register_uri(:get, %r|http://solr\.example\.com/solr/select.*|,
                                :body => File.read(File.dirname(__FILE__) + '/solr_response.json'))
 
           post '/tag',
@@ -168,7 +170,7 @@ class TagServerTest < Test::Unit::TestCase
         end
 
         should "contain a service provider header" do
-          assert_has_header "X-Radiotag-Service-Provider", "BBC"
+          assert_has_header "X-RadioTAG-Service-Provider", "BBC"
         end
       end
     end
@@ -197,7 +199,7 @@ class TagServerTest < Test::Unit::TestCase
         end
 
         should "contain a service provider header" do
-          assert_has_header "X-Radiotag-Service-Provider", "BBC"
+          assert_has_header "X-RadioTAG-Service-Provider", "BBC"
         end
       end
 
@@ -205,8 +207,9 @@ class TagServerTest < Test::Unit::TestCase
         setup do
           mock_auth("/authorized", {:token => "VALID"}, 200, {:token => "HNGZ" }.to_json)
           mock_auth("/auth", { :params => {:token => "VALID"} }, 200, {:token => "HNGZ", :value => {:account_name => "alice", :account_id => "42"}}.to_json, :get)
+          Solr.expects(:solr_host).at_least_once.returns("solr.example.com")
 
-          FakeWeb.register_uri(:get, %r|http://solr\.prototype0\.net/solr/select.*|,
+          FakeWeb.register_uri(:get, %r|http://solr\.example\.com/solr/select.*|,
                                :body => File.read(File.dirname(__FILE__) + '/solr_response.json'))
 
           post '/tag',
@@ -223,11 +226,11 @@ class TagServerTest < Test::Unit::TestCase
         end
 
         should "contain an account_name header" do
-          assert_has_header "X-Radiotag-Account-Name", "alice"
+          assert_has_header "X-RadioTAG-Account-Name", "alice"
         end
 
         should "contain an auth token header" do
-          assert_has_header "X-Radiotag-Auth-Token", "VALID"
+          assert_has_header "X-RadioTAG-Auth-Token", "VALID"
         end
 
         should "generate a valid atom feed with a single entry" do
@@ -236,7 +239,7 @@ class TagServerTest < Test::Unit::TestCase
         end
 
         should "contain a service provider header" do
-          assert_has_header "X-Radiotag-Service-Provider", "BBC"
+          assert_has_header "X-RadioTAG-Service-Provider", "BBC"
         end
       end
     end
@@ -251,6 +254,11 @@ class TagServerTest < Test::Unit::TestCase
       context "with an invalid token" do
         setup do
           mock_auth("/authorized", {:token => "INVALID"}, 401)
+
+          Solr.expects(:solr_host).at_least_once.returns("solr.example.com")
+
+          FakeWeb.register_uri(:get, %r|http://solr\.example\.com/solr/select.*|,
+                               :body => File.read(File.dirname(__FILE__) + '/solr_response.json'))
 
           post '/tag',
           {
@@ -270,7 +278,7 @@ class TagServerTest < Test::Unit::TestCase
         end
 
         should "contain a service provider header" do
-          assert_has_header "X-Radiotag-Service-Provider", "BBC"
+          assert_has_header "X-RadioTAG-Service-Provider", "BBC"
         end
       end
 
@@ -279,7 +287,9 @@ class TagServerTest < Test::Unit::TestCase
           mock_auth("/authorized", {:token => "VALID"}, 200, {:token => "HNGZ" }.to_json)
           mock_auth("/auth", { :params => {:token => "VALID"} }, 200, {:token => "HNGZ", :value => {:account_name => "alice", :account_id => "42"}}.to_json, :get)
 
-          FakeWeb.register_uri(:get, %r|http://solr\.prototype0\.net/solr/select.*|,
+          Solr.expects(:solr_host).at_least_once.returns("solr.example.com")
+
+          FakeWeb.register_uri(:get, %r|http://solr\.example\.com/solr/select.*|,
                                :body => File.read(File.dirname(__FILE__) + '/solr_response.json'))
 
           post '/tag',
@@ -296,11 +306,11 @@ class TagServerTest < Test::Unit::TestCase
         end
 
         should "contain an account_name header" do
-          assert_has_header "X-Radiotag-Account-Name", "alice"
+          assert_has_header "X-RadioTAG-Account-Name", "alice"
         end
 
         should "contain an auth token header" do
-          assert_has_header "X-Radiotag-Auth-Token", "VALID"
+          assert_has_header "X-RadioTAG-Auth-Token", "VALID"
         end
 
         should "generate a valid atom feed with a single entry" do
@@ -309,7 +319,7 @@ class TagServerTest < Test::Unit::TestCase
         end
 
         should "contain a service provider header" do
-          assert_has_header "X-Radiotag-Service-Provider", "BBC"
+          assert_has_header "X-RadioTAG-Service-Provider", "BBC"
         end
       end
     end
@@ -330,7 +340,7 @@ class TagServerTest < Test::Unit::TestCase
       end
 
       should "contain a service provider header" do
-        assert_has_header "X-Radiotag-Service-Provider", "BBC"
+        assert_has_header "X-RadioTAG-Service-Provider", "BBC"
       end
     end
 
@@ -344,7 +354,7 @@ class TagServerTest < Test::Unit::TestCase
       end
 
       should "contain a service provider header" do
-        assert_has_header "X-Radiotag-Service-Provider", "BBC"
+        assert_has_header "X-RadioTAG-Service-Provider", "BBC"
       end
     end
 
@@ -359,11 +369,11 @@ class TagServerTest < Test::Unit::TestCase
       end
 
       should "return a token" do
-        assert_has_header 'X-radiotag-auth-token'
+        assert_has_header 'X-RadioTAG-Auth-Token'
       end
 
       should "contain a service provider header" do
-        assert_has_header "X-Radiotag-Service-Provider", "BBC"
+        assert_has_header "X-RadioTAG-Service-Provider", "BBC"
       end
     end
   end
@@ -380,15 +390,15 @@ class TagServerTest < Test::Unit::TestCase
       end
 
       should "return a registration_key" do
-        assert_has_header('X-radiotag-registration-key')
+        assert_has_header('X-RadioTAG-registration-key')
       end
 
       should "return a url for the Web Front End" do
-        assert_has_header('X-radiotag-registration-url')
+        assert_has_header('X-RadioTAG-registration-url')
       end
 
       should "contain a service provider header" do
-        assert_has_header "X-Radiotag-Service-Provider", "BBC"
+        assert_has_header "X-RadioTAG-Service-Provider", "BBC"
       end
     end
 
@@ -403,15 +413,15 @@ class TagServerTest < Test::Unit::TestCase
       end
 
       should "not return a registration_key" do
-        assert_has_no_header('X-radiotag-registration-key')
+        assert_has_no_header('X-RadioTAG-registration-key')
       end
 
       should "not return a url for the Web Front End" do
-        assert_has_no_header('X-radiotag-registration-url')
+        assert_has_no_header('X-RadioTAG-registration-url')
       end
 
       should "contain a service provider header" do
-        assert_has_header "X-Radiotag-Service-Provider", "BBC"
+        assert_has_header "X-RadioTAG-Service-Provider", "BBC"
       end
     end
   end
@@ -459,15 +469,15 @@ class TagServerTest < Test::Unit::TestCase
       end
 
       should "return an account name" do
-        assert_has_header('X-radiotag-account-name', "alice")
+        assert_has_header('X-RadioTAG-account-name', "alice")
       end
 
       should "return a token" do
-        assert_has_header('X-radiotag-auth-token', 'NEW_TOKEN')
+        assert_has_header('X-RadioTAG-Auth-Token', 'NEW_TOKEN')
       end
 
       should "contain a service provider header" do
-        assert_has_header "X-Radiotag-Service-Provider", "BBC"
+        assert_has_header "X-RadioTAG-Service-Provider", "BBC"
       end
     end
 
@@ -491,15 +501,15 @@ class TagServerTest < Test::Unit::TestCase
       end
 
       should "not return an account id" do
-        assert_has_no_header('X-radiotag-account-id')
+        assert_has_no_header('X-RadioTAG-account-id')
       end
 
       should "not return a token" do
-        assert_has_no_header('X-radiotag-auth-token')
+        assert_has_no_header('X-RadioTAG-Auth-Token')
       end
 
       should "contain a service provider header" do
-        assert_has_header "X-Radiotag-Service-Provider", "BBC"
+        assert_has_header "X-RadioTAG-Service-Provider", "BBC"
       end
     end
   end
@@ -513,7 +523,7 @@ class TagServerTest < Test::Unit::TestCase
       should "return 401" do
         get '/tags'
         assert_equal 401, last_response.status
-        assert_has_header "X-Radiotag-Service-Provider", "BBC"
+        assert_has_header "X-RadioTAG-Service-Provider", "BBC"
       end
 
     end
@@ -547,7 +557,7 @@ class TagServerTest < Test::Unit::TestCase
           end
 
           should "contain a service provider header" do
-            assert_has_header "X-Radiotag-Service-Provider", "BBC"
+            assert_has_header "X-RadioTAG-Service-Provider", "BBC"
           end
         end
 
@@ -562,7 +572,9 @@ class TagServerTest < Test::Unit::TestCase
             device.tags = [@old_tag, @new_tag]
             device.save
 
-            FakeWeb.register_uri(:get, %r|http://solr\.prototype0\.net/solr/select.*|,
+            Solr.expects(:solr_host).at_least_once.returns("solr.example.com")
+
+            FakeWeb.register_uri(:get, %r|http://solr\.example\.com/solr/select.*|,
                                  :body => File.read(File.dirname(__FILE__) + '/solr_response.json'))
 
             get '/tags', '', { 'HTTP_X_RADIOTAG_AUTH_TOKEN' => 'TAGTOK' }
@@ -588,7 +600,7 @@ class TagServerTest < Test::Unit::TestCase
           end
 
           should "contain a service provider header" do
-            assert_has_header "X-Radiotag-Service-Provider", "BBC"
+            assert_has_header "X-RadioTAG-Service-Provider", "BBC"
           end
         end
       end
@@ -625,15 +637,15 @@ class TagServerTest < Test::Unit::TestCase
           end
 
           should "contain an account_name header" do
-            assert_has_header "X-Radiotag-Account-Name", "bob"
+            assert_has_header "X-RadioTAG-Account-Name", "bob"
           end
 
           should "contain an auth token header" do
-            assert_has_header "X-Radiotag-Auth-Token", "USERTAGTOK"
+            assert_has_header "X-RadioTAG-Auth-Token", "USERTAGTOK"
           end
 
           should "contain a service provider header" do
-            assert_has_header "X-Radiotag-Service-Provider", "BBC"
+            assert_has_header "X-RadioTAG-Service-Provider", "BBC"
           end
         end
 
@@ -645,7 +657,9 @@ class TagServerTest < Test::Unit::TestCase
             @device.tags = [@old_tag, @new_tag]
             @device.save
 
-            FakeWeb.register_uri(:get, %r|http://solr\.prototype0\.net/solr/select.*|,
+            Solr.expects(:solr_host).at_least_once.returns("solr.example.com")
+
+            FakeWeb.register_uri(:get, %r|http://solr\.example\.com/solr/select.*|,
                                  :body => File.read(File.dirname(__FILE__) + '/solr_response.json'))
 
             get '/tags', '', { 'HTTP_X_RADIOTAG_AUTH_TOKEN' => 'USERTAGTOK' }
@@ -667,15 +681,15 @@ class TagServerTest < Test::Unit::TestCase
           end
 
           should "contain an account_name header" do
-            assert_has_header "X-Radiotag-Account-Name", "bob"
+            assert_has_header "X-RadioTAG-Account-Name", "bob"
           end
 
           should "contain an auth token header" do
-            assert_has_header "X-Radiotag-Auth-Token", "USERTAGTOK"
+            assert_has_header "X-RadioTAG-Auth-Token", "USERTAGTOK"
           end
 
           should "contain a service provider header" do
-            assert_has_header "X-Radiotag-Service-Provider", "BBC"
+            assert_has_header "X-RadioTAG-Service-Provider", "BBC"
           end
         end
       end

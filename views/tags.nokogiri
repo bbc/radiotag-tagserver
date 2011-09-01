@@ -1,9 +1,9 @@
 xml.feed(:xmlns => "http://www.w3.org/2005/Atom",
          'xmlns:radiotag' => 'http://radiodns.org/2011/radiotag') {
   xml.title "Tag List"
-  xml.link(:href => "http://radiotag.prototype0.net/tags")
-  xml.link(:href => "http://radiotag.prototype0.net/tags", :rel => "self")
-  xml.updated tags.empty? ? Time.now.utc.xmlschema : tags.first.updated_at
+  xml.link(:href => "http://radiotag.prototyping.bbc.co.uk/tags")
+  xml.link(:href => "http://radiotag.prototyping.bbc.co.uk/tags", :rel => "self")
+  xml.updated tags.empty? ? Time.now.xmlschema : tags.first.updated_at.strftime("%Y-%m-%dT%H:%M:%S%:z")
   xml.author {
     xml.name "BBC"
   }
